@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtSql import QSqlQueryModel, QSqlQuery
 from PyQt5.QtWidgets import QHeaderView
-
+from PyQt5.QtWidgets import QAbstractItemView
 
 class BaseTable(QWidget):
     def __init__(self, page_size=10):
@@ -37,17 +37,29 @@ class BaseTable(QWidget):
         self.top_bar.addWidget(self.btn_search)
         self.top_bar.addWidget(self.btn_clear)
 
-        self.btn_prev = QPushButton("Previous")
-        self.btn_next = QPushButton("Next")
+        self.btn_first = QPushButton("<<")
+        self.btn_prev = QPushButton("<")
         self.page_label = QLabel()
+        self.btn_next = QPushButton(">")
+        self.btn_last = QPushButton(">>")
 
-        self.pagination_layout.addWidget(self.btn_prev)
-        self.pagination_layout.addWidget(self.page_label)
-        self.pagination_layout.addWidget(self.btn_next)
+        # Center the pagination
+        pagination_container = QHBoxLayout()
+        pagination_container.addStretch()
+
+        pagination_container.addWidget(self.btn_first)
+        pagination_container.addWidget(self.btn_prev)
+        pagination_container.addWidget(self.page_label)
+        pagination_container.addWidget(self.btn_next)
+        pagination_container.addWidget(self.btn_last)
+
+        pagination_container.addStretch()
+
 
         self.table.setModel(self.model)
         self.table.setAlternatingRowColors(True)
         self.table.setSelectionBehavior(QTableView.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
 
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -58,7 +70,7 @@ class BaseTable(QWidget):
 
         self.layout.addLayout(self.top_bar)
         self.layout.addWidget(self.table, stretch=1)
-        self.layout.addLayout(self.pagination_layout)
+        self.layout.addLayout(pagination_container)
         self.setLayout(self.layout)
 
         self.sort_column = None
@@ -69,8 +81,12 @@ class BaseTable(QWidget):
         header.sectionClicked.connect(self.handle_sort)
 
         # Signals
+
+        self.btn_first.clicked.connect(self.first_page)
         self.btn_prev.clicked.connect(self.prev_page)
         self.btn_next.clicked.connect(self.next_page)
+        self.btn_last.clicked.connect(self.last_page)
+
         self.btn_search.clicked.connect(self.apply_search)
         self.btn_clear.clicked.connect(self.clear_search)
 
@@ -108,29 +124,34 @@ class BaseTable(QWidget):
             self.sort_order
         )
 
-        final_sql = sql
-        for v in values:
-            if isinstance(v, str):
-                v = v.replace("'", "''")  # escape quotes
-                final_sql = final_sql.replace("?", f"'{v}'", 1)
-            else:
-                final_sql = final_sql.replace("?", str(v), 1)
+        query = QSqlQuery()
+        query.prepare(sql)
+
+        for value in values:
+            query.addBindValue(value)
+
+        if not query.exec():
+            print("SQL Error:", query.lastError().text())
+            return
 
         self.model = QSqlQueryModel()
-        self.model.setQuery(final_sql)   # ✅ PASS STRING, NOT QSqlQuery
+        self.model.setQuery(query)
+
+        if self.model.lastError().isValid():
+            print("Model Error:", self.model.lastError().text())
+
         self.table.setModel(self.model)
 
         self.setup_headers()
         self.update_page_label()
 
-
     def apply_search(self):
-        text = self.search_input.text().strip()
+            text = self.search_input.text().strip()
 
-        self.search_text = text if text else None
-        self.search_field = self.search_field_box.currentData() if text else None
-        self.page = 0
-        self.load_data()
+            self.search_text = text if text else None
+            self.search_field = self.search_field_box.currentData() if text else None
+            self.page = 0
+            self.load_data()
 
     def clear_search(self):
         self.search_input.clear()
@@ -152,14 +173,33 @@ class BaseTable(QWidget):
             self.page -= 1
             self.load_data()
 
+    def first_page(self):
+        if self.page != 0:
+            self.page = 0
+            self.load_data()
+
+
+    def last_page(self):
+        total = self.get_total_count(self.search_field, self.search_text)
+        max_page = (total - 1) // self.page_size if total else 0
+
+        if self.page != max_page:
+            self.page = max_page
+            self.load_data()
+
     def update_page_label(self):
         total = self.get_total_count(self.search_field, self.search_text)
         max_page = (total - 1) // self.page_size + 1 if total else 1
 
         self.page_label.setText(f"Page {self.page + 1} of {max_page}")
 
-        self.btn_prev.setEnabled(self.page > 0)
-        self.btn_next.setEnabled(self.page < max_page - 1)
+        at_start = self.page == 0
+        at_end = self.page >= max_page - 1
+
+        self.btn_first.setEnabled(not at_start)
+        self.btn_prev.setEnabled(not at_start)
+        self.btn_next.setEnabled(not at_end)
+        self.btn_last.setEnabled(not at_end)
 
     def get_selected_id(self):
         index = self.table.currentIndex()

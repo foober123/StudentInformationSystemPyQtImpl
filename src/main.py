@@ -1,5 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow
+from studentGenerator import seed_students
 
 from database.db import connect_db
 from ui.dashboard import Dashboard

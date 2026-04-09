@@ -17,7 +17,11 @@ def init_schema():
 
 
 def connect_db():
-    db = QSqlDatabase.addDatabase("QSQLITE")
+    if QSqlDatabase.contains("qt_sql_default_connection"):
+        db = QSqlDatabase.database("qt_sql_default_connection")
+    else:
+        db = QSqlDatabase.addDatabase("QSQLITE")
+
     db.setDatabaseName("school.db")
 
     if not db.open():
