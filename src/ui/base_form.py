@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QMessageBox
-from errors.validationError import ValidationError
+from errors.validation_error import ValidationError
 
 class BaseForm(QDialog):
     def __init__(self, data=None, title_add="Add", title_edit="Edit"):

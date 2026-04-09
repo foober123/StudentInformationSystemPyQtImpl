@@ -1,6 +1,6 @@
 from model.program import ProgramModel
-from service.collegeService import CollegeService
-from errors.validationError import ValidationError
+from service.college_service import CollegeService
+from errors.validation_error import ValidationError
 from core.signals import signals
 import re
 

@@ -1,11 +1,14 @@
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableView, QSizePolicy
+from PyQt5.QtSql import QSqlQueryModel
+from PyQt5.QtWidgets import QHeaderView, QMessageBox
 from ui.base_table import BaseTable
-from service.collegeService import CollegeService
-from PyQt5.QtWidgets import QMessageBox
-from ui.college_form import CollegeForm
+from service.program_service import ProgramService
+from ui.program_form import ProgramForm
+from errors.validation_error import ValidationError
 
-class CollegeTable(BaseTable):
+class ProgramTable(BaseTable):
     def add_item(self):
-        dialog = CollegeForm()
+        dialog = ProgramForm()
 
         if dialog.exec_():
             self.load_data()
@@ -17,24 +20,25 @@ class CollegeTable(BaseTable):
             QMessageBox.warning(self, "Error", "Select a program first")
             return
 
-        college = CollegeService.get_by_code(code)
+        program = ProgramService.get_by_code(code)
 
-        dialog = CollegeForm(college)
+        dialog = ProgramForm(program)
 
         if dialog.exec_():
             self.load_data()
+
 
     def delete_item(self):
         code = self.get_selected_id()
 
         if not code:
-            QMessageBox.warning(self, "Error", "Select a college first")
+            QMessageBox.warning(self, "Error", "Select a program first")
             return
 
         reply = QMessageBox.question(
             self,
             "Confirm Delete",
-            f"Delete college '{code}'?",
+            f"Delete program '{code}'?",
             QMessageBox.Yes | QMessageBox.No
         )
 
@@ -42,7 +46,7 @@ class CollegeTable(BaseTable):
             return
 
         try:
-            success = CollegeService.remove(code)
+            success = ProgramService.remove(code)
 
             if not success:
                 QMessageBox.warning(self, "Error", "Delete failed")
@@ -53,28 +57,32 @@ class CollegeTable(BaseTable):
         except Exception as e:
             QMessageBox.warning(self, "Error", str(e))
 
+    def get_column_map(self):
+        return {
+            0: "p.code",
+            1: "p.name",
+            2: "c.code",
+        }
+
     def __init__(self):
         super().__init__(page_size=10)
 
         self.setup_search_fields()
 
     def setup_search_fields(self):
-        self.search_field_box.addItem("Code", "code")
-        self.search_field_box.addItem("Name", "name")
+        self.search_field_box.addItem("Code", "p.code")
+        self.search_field_box.addItem("Name", "p.name")
+        self.search_field_box.addItem("College", "c.code")
 
     def get_query(self, limit, offset, field=None, text=None, sort=None, sort_order="ASC"):
-        return CollegeService.get(limit, offset, field, text, sort, sort_order)
+        return ProgramService.get(limit, offset, field, text, sort, sort_order)
 
     def get_total_count(self, field=None, text=None):
-        return CollegeService.count(field, text)
-
-    def get_column_map(self):
-        return {
-        0: "code",
-        1: "name"
-        }
-
+        return ProgramService.count(field, text)
 
     def setup_headers(self):
-        self.model.setHeaderData(0, 1, "Code")
+        self.model.setHeaderData(0, 1, "Program Code")
         self.model.setHeaderData(1, 1, "Name")
+        self.model.setHeaderData(2,1, "College Code")
+
+

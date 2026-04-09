@@ -1,6 +1,6 @@
 from model.college import CollegeModel
 from PyQt5.QtSql import QSqlQuery
-from errors.validationError import ValidationError
+from errors.validation_error import ValidationError
 from core.signals import signals
 import re
 

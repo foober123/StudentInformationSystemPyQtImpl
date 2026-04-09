@@ -1,7 +1,7 @@
 from model.student import StudentModel
 from PyQt5.QtSql import QSqlQuery
 import re
-from errors.validationError import ValidationError
+from errors.validation_error import ValidationError
 from core.signals import signals
 
 class StudentService:

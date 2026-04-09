@@ -1,5 +1,5 @@
 from ui.base_table import BaseTable
-from service.studentService import StudentService
+from service.student_service import StudentService
 from ui.student_form import StudentForm
 from PyQt5.QtWidgets import QMessageBox
 

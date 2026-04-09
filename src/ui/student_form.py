@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QLabel, QLineEdit, QComboBox
 from ui.base_form import BaseForm
-from service.studentService import StudentService
+from service.student_service import StudentService
 
 
 class StudentForm(BaseForm):

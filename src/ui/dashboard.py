@@ -5,9 +5,9 @@ from PyQt5.QtWidgets import (
 import qtawesome as qta
 
 from core.signals import signals
-from ui.studentTable import StudentTable
-from ui.programTable import ProgramTable
-from ui.collegeTable import CollegeTable
+from ui.student_table import StudentTable
+from ui.program_table import ProgramTable
+from ui.college_table import CollegeTable
 
 
 class Dashboard(QWidget):

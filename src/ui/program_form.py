@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QLabel, QLineEdit
 from ui.base_form import BaseForm
-from service.programService import ProgramService
+from service.program_service import ProgramService
 
 class ProgramForm(BaseForm):
     def submit_data(self, data):
