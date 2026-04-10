@@ -1,11 +1,14 @@
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QTableView,
+    QGridLayout, QWidget, QVBoxLayout, QTableView,
     QPushButton, QHBoxLayout, QLabel,
     QSizePolicy, QLineEdit, QComboBox
 )
 from PyQt5.QtSql import QSqlQueryModel, QSqlQuery
 from PyQt5.QtWidgets import QHeaderView
 from PyQt5.QtWidgets import QAbstractItemView
+from PyQt5.QtWidgets import QFormLayout, QGroupBox
+from PyQt5.QtWidgets import QSizePolicy
+from PyQt5.QtCore import Qt
 
 class BaseTable(QWidget):
     def __init__(self, page_size=10):
@@ -56,6 +59,24 @@ class BaseTable(QWidget):
         pagination_container.addStretch()
 
 
+        self.details_group = QGroupBox("Details")
+        self.details_layout = QGridLayout() 
+        self.details_group.setLayout(self.details_layout)
+
+        self.details_labels = []  # store value labels
+
+
+        self.details_group.setStyleSheet("""
+            QGroupBox {
+                font-size: 14px;
+                font-weight: bold;
+                margin-top: 10px;
+            }
+            QLabel {
+                font-size: 14px;
+            }
+        """)
+
         self.table.setModel(self.model)
         self.table.setAlternatingRowColors(True)
         self.table.setSelectionBehavior(QTableView.SelectRows)
@@ -69,8 +90,17 @@ class BaseTable(QWidget):
         self.table.verticalHeader().setDefaultSectionSize(40)
 
         self.layout.addLayout(self.top_bar)
-        self.layout.addWidget(self.table, stretch=1)
+        self.layout.addWidget(self.table, stretch=3)
+
+
+
+        self.layout.addWidget(self.details_group, stretch=2)
+
+
         self.layout.addLayout(pagination_container)
+
+
+
         self.setLayout(self.layout)
 
         self.sort_column = None
@@ -141,6 +171,10 @@ class BaseTable(QWidget):
             print("Model Error:", self.model.lastError().text())
 
         self.table.setModel(self.model)
+
+        self.setup_details_panel()
+        self.table.selectionModel().selectionChanged.connect(self.update_details)
+
 
         self.setup_headers()
         self.update_page_label()
@@ -228,3 +262,85 @@ class BaseTable(QWidget):
     def get_column_map(self):
         """Child must map table column index → SQL column"""
         return {}
+
+
+    def update_details(self):
+        index = self.table.currentIndex()
+
+        if not index.isValid():
+            for lbl in self.details_labels:
+                lbl.setText("-")
+            return
+
+        row = index.row()
+        fields = self.get_detail_fields()
+
+        for i, (_, col) in enumerate(fields):
+            value = self.model.data(self.model.index(row, col))
+            self.details_labels[i].setText(str(value))
+
+    def get_detail_fields(self):
+        """
+        Should return list of tuples:
+        [("Label Name", column_index)]
+        """
+        return []
+
+    def setup_details_panel(self):
+
+        grid = self.details_layout
+
+        # Clear existing items
+        while grid.count():
+            item = grid.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+
+        grid.setAlignment(Qt.AlignTop)
+        grid.setContentsMargins(10, 10, 10, 10)
+        grid.setHorizontalSpacing(15)
+        grid.setVerticalSpacing(15)
+
+        self.details_labels = []
+
+        fields = self.get_detail_fields()
+
+        for i, (label_text, _) in enumerate(fields):
+            title = QLabel(label_text.upper())
+            title.setStyleSheet("""
+                font-size: 11px;
+                color: gray;
+            """)
+
+            value = QLabel("-")
+            value.setWordWrap(True)
+            value.setStyleSheet("""
+                font-size: 16px;
+                font-weight: bold;
+            """)
+
+            self.details_labels.append(value)
+
+            row = i // 2
+            col = i % 2
+
+            container = QWidget()
+            layout = QVBoxLayout()
+            layout.setContentsMargins(5, 5, 5, 5)
+            layout.addWidget(title)
+            layout.addWidget(value)
+            container.setLayout(layout)
+
+            container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+            container.setStyleSheet("""
+                QWidget {
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    padding: 8px;
+                }
+            """)
+
+            grid.addWidget(container, row, col)
+

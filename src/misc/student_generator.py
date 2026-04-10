@@ -5,7 +5,7 @@ from datetime import datetime
 
 fake = Faker()
 
-PROGRAMS = ["BSCS", "BSIT", "BSBA"]
+PROGRAMS = ["BSCS", "BSIT", "BSCA", "BSCE", "BSA"]
 GENDERS = ["Male", "Female", "Other"]
 
 def generate_student_id(year, index):

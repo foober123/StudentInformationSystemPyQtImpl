@@ -74,7 +74,13 @@ class CollegeTable(BaseTable):
         1: "name"
         }
 
-
     def setup_headers(self):
         self.model.setHeaderData(0, 1, "Code")
         self.model.setHeaderData(1, 1, "Name")
+
+    def get_detail_fields(self):
+        return [
+            ("Code", 0),
+            ("Name", 1),
+        ]
+

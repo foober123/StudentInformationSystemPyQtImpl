@@ -73,7 +73,7 @@ class StudentTable(BaseTable):
         self.search_field_box.addItem("ID", "s.id")
         self.search_field_box.addItem("First Name", "s.firstname")
         self.search_field_box.addItem("Last Name", "s.lastname")
-        self.search_field_box.addItem("Student", "p.name")
+        self.search_field_box.addItem("Program", "p.name")
         self.search_field_box.addItem("College", "c.name")
         self.search_field_box.addItem("Year", "s.year")
         self.search_field_box.addItem("Gender", "s.gender")
@@ -87,8 +87,20 @@ class StudentTable(BaseTable):
     def setup_headers(self):
         self.model.setHeaderData(0, 1, "ID")
         self.model.setHeaderData(1, 1, "First Name")
-        self.model.setHeaderData(2,1, "Surname")
+        self.model.setHeaderData(2,1, "Last Name")
         self.model.setHeaderData(3,1, "Program")
         self.model.setHeaderData(4,1, "College")
         self.model.setHeaderData(5,1, "Year")
         self.model.setHeaderData(6,1, "Gender")
+
+    def get_detail_fields(self):
+        return [
+            ("ID", 0),
+            ("First Name", 1),
+            ("Last Name", 2),
+            ("Program", 3),
+            ("College", 4),
+            ("Year", 5),
+            ("Gender", 6),
+        ]
+

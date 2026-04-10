@@ -85,4 +85,10 @@ class ProgramTable(BaseTable):
         self.model.setHeaderData(1, 1, "Name")
         self.model.setHeaderData(2,1, "College Code")
 
+    def get_detail_fields(self):
+        return [
+            ("Program Code", 0),
+            ("Name", 1),
+            ("College Code", 2),
+        ]
 

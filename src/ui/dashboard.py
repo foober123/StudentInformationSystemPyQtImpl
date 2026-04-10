@@ -41,6 +41,10 @@ class Dashboard(QWidget):
         self.btn_programs = QPushButton("Programs")
         self.btn_colleges = QPushButton("Colleges")
 
+        self.btn_students.clicked.connect(lambda: self.switch_page(0))
+        self.btn_programs.clicked.connect(lambda: self.switch_page(1))
+        self.btn_colleges.clicked.connect(lambda: self.switch_page(2))
+
         action_layout.addWidget(self.btn_students)
         action_layout.addWidget(self.btn_programs)
         action_layout.addWidget(self.btn_colleges)
@@ -101,13 +105,20 @@ class Dashboard(QWidget):
         self.college_page.page = 0
 
         if entity == "college":
-            self.college_page.apply_search()
-            self.program_page.apply_search()
-            self.student_page.apply_search()
+            self.college_page.load_data()
+            self.program_page.load_data()
+            self.student_page.load_data()
 
         elif entity == "program":
-            self.program_page.apply_search()
-            self.student_page.apply_search()
+            self.program_page.load_data()
+            self.student_page.load_data()
 
         elif entity == "student":
-            self.student_page.apply_search()
+            self.student_page.load_data()
+
+
+    def switch_page(self, index):
+        page = self.stack.widget(index)
+        page.page = 0
+        page.load_data()
+        self.stack.setCurrentIndex(index)

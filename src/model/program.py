@@ -31,8 +31,7 @@ class ProgramModel:
     def count(field=None, text=None):
         sql = """
             SELECT COUNT(*)
-            FROM student s
-            LEFT JOIN program p ON s.course = p.code
+            FROM program p
             LEFT JOIN college c ON p.college = c.code
         """
 
@@ -49,7 +48,7 @@ class ProgramModel:
             query.addBindValue(v)
 
         if not query.exec():
-            print("SQL Error (COUNT - STUDENT):", query.lastError().text())
+            print("SQL Error (COUNT - PROGRAM):", query.lastError().text())
             return 0
 
         if query.next():
