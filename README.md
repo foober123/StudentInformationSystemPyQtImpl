@@ -1,4 +1,11 @@
+# Simple Student Information System
+PyQt5 implementation of a student information system
+
+![Screenshot](doc/screenshot.png)
+
+
 # Project Setup Guide
+
 
 ## 1. Clone the Repository
 
