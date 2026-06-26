@@ -60,20 +60,39 @@ class CollegeService:
     def _validate_college(data, update=False):
         errors = {}
 
-        if not update:
-            if not data.get("code"):
-                errors["code"] = "Code required"
-            else:
-                if not re.match(r"^[A-Z]+$", data["code"]):
-                    errors["code"] = "Code must contain uppercase letters only (A-Z)"
-                elif CollegeService.get_by_code(data["code"]):
+        code = data.get("code", "").strip()
+        name = data.get("name", "").strip()
+
+        # Code validation
+        if not code:
+            errors["code"] = "Code required"
+
+        elif not re.fullmatch(r"[A-Z]+", code):
+            errors["code"] = "Code must contain uppercase letters only (A-Z)"
+
+        else:
+            existing = CollegeService.get_by_code(code)
+
+            if not update:
+                if existing:
                     errors["code"] = "College code already exists"
 
-        if not data.get("name"):
+            else:
+                original_code = data.get("original_code")
+
+                if (
+                    existing
+                    and code != original_code
+                ):
+                    errors["code"] = "College code already exists"
+
+        # Name validation
+        if not name:
             errors["name"] = "Name required"
-        else:
-            if "name" in data and not data["name"]:
-                errors["name"] = "Name cannot be empty"
 
         if errors:
             raise ValidationError(errors)
+
+    @staticmethod
+    def get_college_codes():
+        return CollegeModel.get_college_codes()

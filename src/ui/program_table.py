@@ -57,6 +57,14 @@ class ProgramTable(BaseTable):
         except Exception as e:
             QMessageBox.warning(self, "Error", str(e))
 
+
+
+    def __init__(self):
+        super().__init__(page_size=10)
+
+        self.setup_search_fields()
+
+
     def get_column_map(self):
         return {
             0: "p.code",
@@ -64,26 +72,10 @@ class ProgramTable(BaseTable):
             2: "c.code",
         }
 
-    def __init__(self):
-        super().__init__(page_size=10)
-
-        self.setup_search_fields()
-
     def setup_search_fields(self):
         self.search_field_box.addItem("Code", "p.code")
         self.search_field_box.addItem("Name", "p.name")
         self.search_field_box.addItem("College", "c.code")
-
-    def get_query(self, limit, offset, field=None, text=None, sort=None, sort_order="ASC"):
-        return ProgramService.get(limit, offset, field, text, sort, sort_order)
-
-    def get_total_count(self, field=None, text=None):
-        return ProgramService.count(field, text)
-
-    def setup_headers(self):
-        self.model.setHeaderData(0, 1, "Program Code")
-        self.model.setHeaderData(1, 1, "Name")
-        self.model.setHeaderData(2,1, "College Code")
 
     def get_detail_fields(self):
         return [
@@ -91,4 +83,16 @@ class ProgramTable(BaseTable):
             ("Name", 1),
             ("College Code", 2),
         ]
+
+    def setup_headers(self):
+        self.model.setHeaderData(0, 1, "Program Code")
+        self.model.setHeaderData(1, 1, "Name")
+        self.model.setHeaderData(2,1, "College Code")
+
+    def get_query(self, limit, offset, field=None, text=None, sort=None, sort_order="ASC"):
+        return ProgramService.get(limit, offset, field, text, sort, sort_order)
+
+    def get_total_count(self, field=None, text=None):
+        return ProgramService.count(field, text)
+
 

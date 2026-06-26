@@ -60,57 +60,74 @@ class StudentService:
         signals.data_changed.emit("student")
         return result
 
+
     @staticmethod
     def _validate_student(data, update=False):
         errors = {}
+
         name_pattern = r"^[A-Za-z]+(?:[ -][A-Za-z]+)*$"
 
+        def invalid_name(value):
+            return not re.match(name_pattern, value)
 
+        # ID
+        if not data.get("id"):
+            errors["id"] = "ID required"
+        elif not re.match(r"^20\d{2}-\d{4}$", data["id"]):
+            errors["id"] = "Format must be 20XX-XXXX"
+       
+        if not data.get("gender"):
+            errors["gender"] = "Gender is required"
+        elif data["gender"] not in ["Male", "Female", "Other"]:
+            errors["gender"] = "Invalid gender"
+
+        
         if not update:
-            if not data.get("id"):
-                errors["id"] = "ID required"
-            else:
-                if not re.match(r"^20\d{2}-\d{4}$", data["id"]):
-                    errors["id"] = "Format must be 20XX-XXXX"
+            if StudentService._student_exists(data["id"]):
+                errors["id"] = "Student already exists"
 
+            # firstname
             if not data.get("firstname"):
                 errors["firstname"] = "Firstname required"
-            elif not re.match(name_pattern, data["firstname"]):
+            elif invalid_name(data["firstname"]):
                 errors["firstname"] = "Firstname must contain letters only"
 
+            # lastname
             if not data.get("lastname"):
                 errors["lastname"] = "Lastname required"
-            elif not re.match(name_pattern, data["lastname"]):
+            elif invalid_name(data["lastname"]):
                 errors["lastname"] = "Lastname must contain letters only"
-
-            if StudentService._student_exists(data["id"]):
-                errors["id"] = ("Student already exists")
 
         else:
+            if "firstname" in data:
+                if not data["firstname"]:
+                    errors["firstname"] = "Firstname cannot be empty"
+                elif invalid_name(data["firstname"]):
+                    errors["firstname"] = "Firstname must contain letters only"
 
-            if "firstname" in data and not data["firstname"]:
-                errors["firstname"] = "Firstname cannot be empty"
-            elif not re.match(name_pattern, data["firstname"]):
-                errors["firstname"] = "Firstname must contain letters only"
+            if "lastname" in data:
+                if not data["lastname"]:
+                    errors["lastname"] = "Lastname cannot be empty"
+                elif invalid_name(data["lastname"]):
+                    errors["lastname"] = "Lastname must contain letters only"
 
-            if "lastname" in data and not data["lastname"]:
-                errors["lastname"] = "Lastname cannot be empty"
-            elif not re.match(name_pattern, data["lastname"]):
-                errors["lastname"] = "Lastname must contain letters only"
+            if "id" in data:
+                existing = StudentService.get_student_by_id(data["id"])
 
-        if "course" not in data or not data["course"]:
+                if existing and data["id"] != data.get("original_id"):
+                    errors["id"] = "Another student already uses this ID"
+
+
+
+
+        if not data.get("course"):
             errors["course"] = "Course is required"
+        elif not StudentService._program_exists(data["course"]):
+            errors["course"] = "Invalid program"
 
-        if "year" in data:
+        if "year" in data and data["year"] is not None:
             if not isinstance(data["year"], int) or not (1 <= data["year"] <= 5):
                 errors["year"] = "Year must be between 1 and 5"
-
-        if "gender" in data and data["gender"] is not None:
-            if data["gender"] not in ["Male", "Female", "Other"]:
-                errors["gender"] = "Invalid gender"
-
-        if data.get("course") and not StudentService._program_exists(data["course"]):
-            raise ValueError("Invalid program")
 
         if errors:
             raise ValidationError(errors)
@@ -130,3 +147,5 @@ class StudentService:
         query.addBindValue(program_code)
         query.exec()
         return query.next()
+
+

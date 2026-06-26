@@ -58,25 +58,36 @@ class StudentTable(BaseTable):
             0: "s.id",
             1: "s.firstname",
             2: "s.lastname",
-            3: "p.name",
-            4: "c.name",
+            3: "p.code",
+            4: "c.code",
             5: "s.year",
             6: "s.gender",
         }
 
-    def __init__(self):
-        super().__init__(page_size=10)
-
-        self.setup_search_fields()
+    def get_detail_fields(self):
+        return [
+            ("ID", 0),
+            ("First Name", 1),
+            ("Last Name", 2),
+            ("Program", 3),
+            ("College", 4),
+            ("Year", 5),
+            ("Gender", 6),
+        ]
 
     def setup_search_fields(self):
         self.search_field_box.addItem("ID", "s.id")
         self.search_field_box.addItem("First Name", "s.firstname")
         self.search_field_box.addItem("Last Name", "s.lastname")
-        self.search_field_box.addItem("Program", "p.name")
-        self.search_field_box.addItem("College", "c.name")
+        self.search_field_box.addItem("Program", "p.code")
+        self.search_field_box.addItem("College", "c.code")
         self.search_field_box.addItem("Year", "s.year")
         self.search_field_box.addItem("Gender", "s.gender")
+
+    def __init__(self):
+        super().__init__(page_size=10)
+
+        self.setup_search_fields()
 
     def get_query(self, limit, offset, field=None, text=None, sort=None, sort_order="ASC"):
         return StudentService.get_students(limit, offset, field, text, sort, sort_order)
@@ -93,14 +104,4 @@ class StudentTable(BaseTable):
         self.model.setHeaderData(5,1, "Year")
         self.model.setHeaderData(6,1, "Gender")
 
-    def get_detail_fields(self):
-        return [
-            ("ID", 0),
-            ("First Name", 1),
-            ("Last Name", 2),
-            ("Program", 3),
-            ("College", 4),
-            ("Year", 5),
-            ("Gender", 6),
-        ]
 

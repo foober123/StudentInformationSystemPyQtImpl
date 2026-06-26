@@ -8,8 +8,8 @@ class StudentModel:
                 s.id,
                 s.firstname,
                 s.lastname,
-                COALESCE(p.name, 'Not Found') AS program,
-                COALESCE(c.name, 'Not Found') AS college,
+                COALESCE(p.code, 'Not Found') AS program,
+                COALESCE(c.code, 'Not Found') AS college,
                 s.year,
                 s.gender
             FROM student s
@@ -84,8 +84,9 @@ class StudentModel:
         fields = []
         values = []
 
-        for key in ["firstname", "lastname", "course", "year", "gender"]:
-            if key in data:
+        # allow updating id too
+        for key in ["id", "firstname", "lastname", "course", "year", "gender"]:
+            if key in data and key != "original_id":
                 fields.append(f"{key} = ?")
                 values.append(data[key])
 
@@ -97,14 +98,16 @@ class StudentModel:
             UPDATE student
             SET {', '.join(fields)}
             WHERE id = ?
-            """
+        """
 
         query.prepare(sql)
 
+        # bind SET values first
         for value in values:
             query.addBindValue(value)
 
-        query.addBindValue(data["id"])
+        # bind WHERE using original id
+        query.addBindValue(data["original_id"])
 
         if not query.exec():
             print("SQL Error (UPDATE):", query.lastError().text())

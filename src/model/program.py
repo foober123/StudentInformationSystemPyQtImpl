@@ -88,13 +88,15 @@ class ProgramModel:
         query = QSqlQuery()
         query.prepare("""
             UPDATE program
-            SET name = ?, college = ?
+            SET code = ?, name = ?, college = ?
             WHERE code = ?
         """)
 
+        query.addBindValue(program["code"])
         query.addBindValue(program["name"])
         query.addBindValue(program["college"])  # can be None
-        query.addBindValue(program["code"])
+        query.addBindValue(program["original_code"])
+
 
         if not query.exec():
             print("SQL Error (UPDATE):", query.lastError().text())
@@ -125,3 +127,24 @@ class ProgramModel:
             }
 
         return None
+
+
+    @staticmethod
+    def get_program_codes():
+        query = QSqlQuery()
+        query.prepare("""
+            SELECT code
+            FROM program
+            ORDER BY code
+        """)
+
+        if not query.exec():
+            print("SQL Error (GET PROGRAM CODES):", query.lastError().text())
+            return []
+
+        programs = []
+
+        while query.next():
+            programs.append(query.value(0))
+
+        return programs

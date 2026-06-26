@@ -47,46 +47,47 @@ class ProgramService:
     @staticmethod
     def _validate_program(data, update=False):
         errors = {}
+
+        code = (data.get("code") or "").strip()
+        name = (data.get("name") or "").strip()
+        college = (data.get("college") or "").strip()
+
         code_pattern = r"^[A-Za-z]+(?:[ -][A-Za-z]+)*$"
 
+        # Code validation
+        if not code:
+            errors["code"] = "Code required"
 
-        if not update:
-            if not data.get("code"):
-                errors["code"] = "Code required"
-            else:
-                if not re.match(code_pattern, data["code"]):
-                    errors["code"] = "Code must contain letters only"
-                elif ProgramService.get_by_code(data["code"]):
-                    errors["code"] = "Program code already exists"
-
-            if not data.get("name"):
-                errors["name"] = "Name required"
-
-            if not data.get("college"):
-                errors["college"] = "College required"
-            else:
-                if not CollegeService.get_by_code(data["college"]):
-                    errors["college"] = "Invalid college"
-
-            if "code" in data and not data["code"]:
-                errors["code"] = "Code cannot be empty"
+        elif not re.fullmatch(code_pattern, code):
+            errors["code"] = "Code must contain letters only"
 
         else:
-            if "code" in data:
-                if not data["code"]:
-                    errors["code"] = "Code cannot be empty"
-                elif not re.match(code_pattern, data["code"]):
-                    errors["code"] = "Code must contain letters only"
+            existing = ProgramService.get_by_code(code)
 
-        if "name" in data and not data["name"]:
-            errors["name"] = "Name cannot be empty"
+            if not update:
+                if existing:
+                    errors["code"] = "Program code already exists"
 
-        if "college" in data:
-            if not data["college"]:
-                errors["college"] = "College cannot be empty"
             else:
-                if not CollegeService.get_by_code(data["college"]):
-                    errors["college"] = "Invalid college"
+                original_code = data.get("original_code")
+
+                if existing and code != original_code:
+                    errors["code"] = "Program code already exists"
+
+        # Name validation
+        if not name:
+            errors["name"] = "Name required"
+
+        # College validation
+        if not college:
+            errors["college"] = "College required"
+
+        elif not CollegeService.get_by_code(college):
+            errors["college"] = "Invalid college"
 
         if errors:
             raise ValidationError(errors)
+
+    @staticmethod
+    def get_program_codes():
+        return ProgramModel.get_program_codes()

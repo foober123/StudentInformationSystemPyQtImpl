@@ -14,7 +14,7 @@ class CollegeTable(BaseTable):
         code = self.get_selected_id()
 
         if not code:
-            QMessageBox.warning(self, "Error", "Select a program first")
+            QMessageBox.warning(self, "Error", "Select a college first")
             return
 
         college = CollegeService.get_by_code(code)

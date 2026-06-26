@@ -12,6 +12,8 @@ class CollegeForm(BaseForm):
 
 
     def __init__(self, data=None):
+        self.original_code = data["code"] if data else None
+        
         super().__init__(
             data,
             title_add="Add College",
@@ -31,10 +33,11 @@ class CollegeForm(BaseForm):
         self.code_input.setText(self.data["code"])
         self.name_input.setText(self.data["name"])
 
-        self.code_input.setDisabled(True)
+        # self.code_input.setDisabled(True)
 
     def get_data(self):
         return {
+            "original_code": self.original_code,
             "code": self.code_input.text().strip(),
             "name": self.name_input.text().strip()
         }
